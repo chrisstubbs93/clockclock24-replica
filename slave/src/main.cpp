@@ -5,6 +5,8 @@
 #include "clock_state.h"
 #include "i2c.h"
 
+bool HallStates[8];
+
 const t_clock default_clock = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 // int spin_num; //The spin lock number
@@ -50,8 +52,22 @@ void setup()
   Wire.onReceive(receiveEvent);
 }
 
+
+
 void loop()
 {
+uint8_t hn= 0;
+  for(uint8_t pin : HallPins){
+    bool t = !digitalRead(pin);
+    if(HallStates[hn] != t){
+      if(t){ //rising edge
+        blinken(hn+1);
+        zero_hand(hn);
+      }
+      HallStates[hn] = t;
+    }
+    hn = hn+1;
+  }
   delay(10);
 }
 

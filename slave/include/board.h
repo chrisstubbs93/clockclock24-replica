@@ -8,6 +8,16 @@
 #define INIT_HANDS_ANGLE 270
 
 /**
+ * Blink the LED n times
+*/
+void blinken(uint8_t n);
+
+/**
+ * Zero hand posn when crossing sensor
+*/
+void zero_hand(int index);
+
+/**
  * Initializes all motor objects and get the I2C address
 */
 void board_begin();

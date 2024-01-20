@@ -18,8 +18,24 @@ static int sanitize_angle(int angle)
   return angle < 0 ? 360 + angle : angle;
 }
 
+void blinken(uint8_t n){
+for (uint8_t i = 0; i < n; i++){
+      digitalWrite(LED, HIGH);
+      delay(25);
+      digitalWrite(LED, LOW);
+      delay(50);
+    }
+}
+
 void board_begin()
 {
+
+  // hall sensor stuff
+  pinMode(LED, OUTPUT);
+  for(uint8_t pin : HallPins){
+    pinMode(pin, INPUT_PULLUP);
+  }
+
   // Reset motor controllers
   pinMode(RESET, OUTPUT);
   digitalWrite(RESET, HIGH);
@@ -89,4 +105,9 @@ void adjust_m_hand(int index, signed char amount)
   int steps = amount * STEPS / 360;
   _motors[index*2].move(-steps);
   _motors[index*2].runToPosition();
+}
+
+void zero_hand(int index)
+{
+_motors[index].setHandAngle(1);
 }

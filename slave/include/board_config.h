@@ -29,4 +29,8 @@
 
 #define RESET 22
 
+const uint8_t HallPins[] = {12,13,14,15,16,17}; //A-F
+
+#define LED 28
+
 #endif
