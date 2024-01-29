@@ -20,9 +20,9 @@ static int sanitize_angle(int angle)
 
 void blinken(uint8_t n){
 for (uint8_t i = 0; i < n; i++){
-      digitalWrite(LED, HIGH);
+      digitalWrite(LED_BUILTIN, HIGH);
       delay(25);
-      digitalWrite(LED, LOW);
+      digitalWrite(LED_BUILTIN, LOW);
       delay(50);
     }
 }
@@ -31,7 +31,17 @@ void board_begin()
 {
 
   // hall sensor stuff
-  pinMode(LED, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(25);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(50);      
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(25);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(50);
+
+
   for(uint8_t pin : HallPins){
     pinMode(pin, INPUT_PULLUP);
   }
