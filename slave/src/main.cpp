@@ -50,21 +50,47 @@ void setup()
 
   Wire.begin(get_i2c_address());
   Wire.onReceive(receiveEvent);
+
+  for (uint8_t i = 0; i < 6; i++)
+  {
+    run_clockwise(i);
+  }
+    //motor_identification();
+
 }
 
 
 
 void loop()
 {
-uint8_t hn= 0;
+  uint8_t hn= 0;
   for(uint8_t pin : HallPins){
     bool t = !digitalRead(pin);
-    if(HallStates[hn] != t){
-      if(t){ //rising edge
-        blinken(hn+1);
-        zero_hand(hn);
-      }
+    if(t){ //rising edge
+      if(HallStates[hn] != t){      
+        if(!is_hall_start_set(hn)) set_hall_start(hn);
+          if(get_direction(hn)) //clockwise
+          {
+            zero_hand_with_offset(hn, 100);
+          } else {
+            zero_hand_with_offset(hn, -100);
+          }
+          //blinken(hn+1);
+          
+        }
       HallStates[hn] = t;
+    } else {
+      if(HallStates[hn] != t){ 
+        if(is_hall_start_set(hn) && !is_hall_stop_set(hn)) set_hall_stop(hn);
+        Serial.print("Hall gap for motor ");
+        Serial.print(hn);
+        Serial.print(": ");
+        Serial.println(get_hall_step_gap(hn));
+        // Serial.println(get_hall_start_value(hn));
+        // Serial.println(get_hall_stop_value(hn));
+        finish_zero(hn);
+        HallStates[hn] = t;
+      }
     }
     hn = hn+1;
   }

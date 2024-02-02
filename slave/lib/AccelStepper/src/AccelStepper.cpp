@@ -5,6 +5,8 @@
 
 #include "AccelStepper.h"
 
+#define zeroOffset 30
+
 #if 0
 // Some debugging assistance
 void dump(uint8_t* p, int l)
@@ -82,6 +84,23 @@ long AccelStepper::targetPosition()
 long AccelStepper::currentPosition()
 {
     return _currentPos;
+}
+
+void AccelStepper::zeroCurrentPositionWithOffset(int offset)
+{
+    _targetPos = 0 + offset;
+    moveTo(_targetPos);
+    _currentPos = 0;
+    // _n = 0;
+    // _stepInterval = 0;
+    // _speed = 0.0;
+}
+
+/// @brief Get current direction of this motor
+/// @return CW = 1/true
+bool AccelStepper::getCurrentDirection()
+{
+    return _direction;
 }
 
 // Useful during initialisations or after initial positioning
@@ -205,6 +224,9 @@ AccelStepper::AccelStepper(uint8_t interface, uint8_t pin1, uint8_t pin2, uint8_
     _pin[2] = pin3;
     _pin[3] = pin4;
     _enableInverted = false;
+
+    _hallStartStepCount = -10000;
+    _hallStopStepCount = -10000;
     
     // NEW
     _n = 0;
@@ -627,6 +649,36 @@ boolean AccelStepper::runSpeedToPosition()
     return runSpeed();
 }
 
+void AccelStepper::runClockwiseUntilZero(long distance)
+{
+    _direction = DIRECTION_CW;
+
+    setMaxSpeed(130);
+    setAcceleration(20);
+    _targetPos = distance;
+    
+    //_speed = 10;
+	computeNewSpeed();
+    //runToPosition();
+    // while(1 == 1)
+    // {
+    //         //Serial.println("here 2");
+    //     // if (_direction == DIRECTION_CW)
+    //     // {
+    //     //     // Clockwise
+    //     //     _currentPos += 1;
+    //     // }
+    //     // else
+    //     // {
+    //     //     // Anticlockwise  
+    //     //     _currentPos -= 1;
+    //     // }
+        
+    //     //run();
+    // }
+
+}
+
 // Blocks until the new target position is reached
 void AccelStepper::runToNewPosition(long position)
 {
@@ -649,4 +701,36 @@ void AccelStepper::stop()
 bool AccelStepper::isRunning()
 {
     return !(_speed == 0.0 && _targetPos == _currentPos);
+}
+
+long AccelStepper::getHallStartValue()
+{
+    return _hallStartStepCount;
+}
+
+long AccelStepper::getHallStopValue()
+{
+    return _hallStopStepCount;
+}
+
+void AccelStepper::setHallStartValue()
+{
+    _hallStartStepCount = _currentPos;
+    _currentPos = 0;
+}
+
+void AccelStepper::setHallStopValue()
+{
+    _hallStopStepCount = _currentPos;
+}
+
+void AccelStepper::setNewZeroWithOffset(long offset)
+{
+    stop();
+    delay(5000);
+    _targetPos = _currentPos + offset;
+    Serial.print("target pos: ");
+    Serial.println(_targetPos);
+    moveTo(_targetPos);
+    _currentPos = 0;
 }

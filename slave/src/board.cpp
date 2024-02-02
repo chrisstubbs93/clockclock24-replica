@@ -1,4 +1,5 @@
 #include "board.h"
+#include <string>
 
 // Define a stepper and the pins it will use
 ClockAccelStepper _motors[6] = {
@@ -76,6 +77,22 @@ void board_loop()
     _motors[i].run();
 }
 
+void motor_identification()
+{
+  while(1 == 1){
+  for(int i = 0; i < 6; i++)
+  {
+    Serial.println("Moving Motor");
+    Serial.println(i);
+    //_motors[i].run();
+    _motors[i].move(100);
+    _motors[i].runToPosition();
+    delay(5000);
+  }
+  }
+
+}
+
 uint8_t get_i2c_address()
 {
   return _i2c_address;
@@ -117,7 +134,93 @@ void adjust_m_hand(int index, signed char amount)
   _motors[index*2].runToPosition();
 }
 
-void zero_hand(int index)
+void zero_hand_with_offset(int index, int offset)
 {
-_motors[index].setHandAngle(1);
+  if(index == 0 || index == 2 || index == 4) { // bottom hand
+    offset = offset * 2;
+  }
+  //_motors[index].zeroCurrentPositionWithOffset(offset);
+  Serial.print("Hand ");
+  Serial.print(index);
+  Serial.println(" zeroed");
+}
+
+bool get_direction(int index)
+{
+  return _motors[index].getCurrentDirection();
+}
+
+void run_clockwise(int index)
+{
+    if(index == 0 || index == 2 || index == 4) { // bottom hand
+    _motors[index].runClockwiseUntilZero(5000);
+  } else if(index == 1 || index == 3 || index == 5) { 
+    _motors[index].runClockwiseUntilZero(5000);
+  }
+  // _motors[index].setMaxSpeed(100);
+  // _motors[index].setAcceleration(15);
+  // _motors[index].move(2000);
+  // _motors[index].runToPosition();
+  //_motors[index].runToPosition();
+}
+
+
+void set_clock_test(int index, t_clock state)
+{
+  int angle_h = sanitize_angle(state.angle_h + state.adjust_h);
+  _motors[index].setMaxSpeed(state.speed_h);
+  _motors[index].setAcceleration(state.accel_h);
+  //_motors[index*2].moveToAngle(angle_h, state.mode_h);
+
+  int angle_m = sanitize_angle(state.angle_m + state.adjust_m);
+  _motors[index].setMaxSpeed(state.speed_m);
+  _motors[index].setAcceleration(state.accel_m);
+  //_motors[index*2 + 1].moveToAngle(angle_m, state.mode_m);
+}
+
+bool is_hall_start_set(int index)
+{
+  return _motors[index].getHallStartValue() != -10000 ? true : false;
+}
+
+bool is_hall_stop_set(int index)
+{
+  return _motors[index].getHallStopValue() != -10000 ? true : false;
+}
+
+void set_hall_start(int index)
+{
+  _motors[index].setHallStartValue();
+  Serial.println("Hall Start set");
+}
+
+void set_hall_stop(int index)
+{
+  _motors[index].setHallStopValue();
+  Serial.println("Hall stop set");
+}
+
+long get_hall_step_gap(int index)
+{
+  if(_motors[index].getHallStartValue() > _motors[index].getHallStopValue())
+  {
+    return _motors[index].getHallStartValue() - _motors[index].getHallStopValue();
+  } else {
+    return _motors[index].getHallStopValue() - _motors[index].getHallStartValue();
+  }
+}
+
+long get_hall_start_value(int index)
+{
+  return _motors[index].getHallStartValue();
+}
+
+long get_hall_stop_value(int index)
+{
+  return _motors[index].getHallStopValue();
+}
+
+void finish_zero(int index)
+{
+  _motors[index].setNewZeroWithOffset(get_hall_step_gap(index) / 2);
 }

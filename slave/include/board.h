@@ -15,8 +15,11 @@ void blinken(uint8_t n);
 /**
  * Zero hand posn when crossing sensor
 */
-void zero_hand(int index);
+void zero_hand_with_offset(int index, int offset);
 
+bool get_direction(int index);
+void run_clockwise(int index);
+void set_clock_test(int index, t_clock state);
 /**
  * Initializes all motor objects and get the I2C address
 */
@@ -26,6 +29,8 @@ void board_begin();
  * Needs to be called on the main loop to move steppers
 */
 void board_loop();
+
+void motor_identification();
 
 /**
  * Gets the current I2C address set on the board
@@ -60,5 +65,14 @@ void adjust_h_hand(int index, signed char amount);
  * @param amount    angle (< 0 clockwise, > 0 counterclockwise)
 */
 void adjust_m_hand(int index, signed char amount);
+
+bool is_hall_start_set(int index);
+bool is_hall_stop_set(int index);
+void set_hall_start(int index);
+void set_hall_stop(int index);
+long get_hall_step_gap(int index);
+long get_hall_start_value(int index);
+long get_hall_stop_value(int index);
+void finish_zero(int index);
 
 #endif
