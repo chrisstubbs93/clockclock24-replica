@@ -71,9 +71,9 @@ void loop()
         if(!is_hall_start_set(hn)) set_hall_start(hn);
           if(get_direction(hn)) //clockwise
           {
-            zero_hand_with_offset(hn, 100);
+            zero_hand_with_offset(hn, 0);
           } else {
-            zero_hand_with_offset(hn, -100);
+            zero_hand_with_offset(hn, 0);
           }
           //blinken(hn+1);
           
@@ -85,9 +85,11 @@ void loop()
         Serial.print("Hall gap for motor ");
         Serial.print(hn);
         Serial.print(": ");
-        Serial.println(get_hall_step_gap(hn));
-        // Serial.println(get_hall_start_value(hn));
-        // Serial.println(get_hall_stop_value(hn));
+        Serial.print(get_hall_step_gap(hn));
+        Serial.print(" start: ");
+         Serial.print(get_hall_start_value(hn));
+         Serial.print(" stop: ");
+         Serial.println(get_hall_stop_value(hn));
         finish_zero(hn);
         HallStates[hn] = t;
       }

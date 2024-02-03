@@ -76,18 +76,52 @@ void board_loop()
   for(int i = 0; i < 6; i++)
     _motors[i].run();
 }
-
+bool all_zeroed;
 void board_loop_setup()
 {
   for(int i = 0; i < 6; i++)
   {
     if(_motors[i].getClockwiseBool()) _motors[i].run();
-    if(_motors[0].getZeroedBool() && _motors[1].getZeroedBool() && _motors[2].getZeroedBool() && _motors[3].getZeroedBool() && _motors[4].getZeroedBool() && _motors[5].getZeroedBool())
-    {
-      Serial.println("all motors zeroed");
-      _motors[i].moveToZero(_motors[i].getZeroOffset());
-    } 
+    // if(_motors[0].getZeroedBool() && _motors[1].getZeroedBool() && _motors[2].getZeroedBool() && _motors[3].getZeroedBool() && _motors[4].getZeroedBool() && _motors[5].getZeroedBool())
+    // {
+    //   if (!all_zeroed){
+    //     Serial.print("hand");
+    //     Serial.print(i);
+    //     Serial.print(" posn is  ");
+    //     Serial.print(_motors[i].currentPosition());
+    //     Serial.print(" going to  ");
+    //     Serial.println(_motors[0].getZeroOffset());
+    //     //_motors[i].moveToZero(_motors[i].getZeroOffset());
+
+    //     _motors[i].moveTo(_motors[i].getZeroOffset());
+    //     all_zeroed = true;
+    //   }
+    //   _motors[i].run();
+    // } 
   }
+
+  if(_motors[0].getZeroedBool() && _motors[1].getZeroedBool() && _motors[2].getZeroedBool() && _motors[3].getZeroedBool() && _motors[4].getZeroedBool() && _motors[5].getZeroedBool())
+    {
+      if (!all_zeroed){
+      for(int i = 0; i < 6; i++)
+        {
+          Serial.print("hand");
+          Serial.print(i);
+          Serial.print(" posn is  ");
+          Serial.print(_motors[i].currentPosition());
+          Serial.print(" going to  ");
+          Serial.println(_motors[i].getZeroOffset());
+          //_motors[i].moveToZero(_motors[i].getZeroOffset());
+          _motors[i].moveTo(_motors[i].getZeroOffset());
+          all_zeroed = true;
+        }
+      }
+      for(int i = 0; i < 6; i++)
+      {
+        _motors[i].run();
+      }
+    }
+
 }
 
 void motor_identification()
@@ -206,13 +240,13 @@ bool is_hall_stop_set(int index)
 void set_hall_start(int index)
 {
   _motors[index].setHallStartValue();
-  Serial.println("Hall Start set");
+  Serial.print("Hall Start set");
 }
 
 void set_hall_stop(int index)
 {
   _motors[index].setHallStopValue();
-  Serial.println("Hall stop set");
+  Serial.print("Hall stop set");
 }
 
 long get_hall_step_gap(int index)
@@ -237,6 +271,7 @@ long get_hall_stop_value(int index)
 
 void finish_zero(int index)
 {
-  _motors[index].setZeroOffset(get_hall_step_gap(index) / 2);
-  _motors[index].setNewZeroWithOffset(get_hall_step_gap(index) / 2);
+
+  _motors[index].setZeroOffset((_motors[index].getHallStartValue() + _motors[index].getHallStopValue()) / 2);
+  _motors[index].setNewZeroWithOffset(get_hall_step_gap(index) / 2); //ignores numbers
 }

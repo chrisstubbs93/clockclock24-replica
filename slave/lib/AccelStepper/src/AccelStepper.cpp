@@ -716,7 +716,7 @@ long AccelStepper::getHallStopValue()
 void AccelStepper::setHallStartValue()
 {
     _hallStartStepCount = _currentPos;
-    _currentPos = 0;
+    //_currentPos = 0; //maybe dont do this
 }
 
 void AccelStepper::setHallStopValue()
@@ -759,9 +759,11 @@ bool AccelStepper::getClockwiseBool()
 void AccelStepper::moveToZero(long offset)
 {
     _direction = DIRECTION_CCW;
-    if(isTopHand()) offset = offset+200;
-    if(!isTopHand()) offset = offset-200;
-    move(offset);
+    if(isTopHand()) offset = offset;
+    if(!isTopHand()) offset = offset;
+    _currentPos = 0;
+    //move(offset);
+    //runToPosition();
     setClockwiseBool(true);
 }
 
