@@ -26,8 +26,8 @@ void AccelStepper::moveTo(long absolute)
 {
     if (_targetPos != absolute)
     {
-	_targetPos = absolute;
-	computeNewSpeed();
+        _targetPos = absolute;
+        computeNewSpeed();
 	// compute new n?
     }
 }
@@ -660,7 +660,7 @@ void AccelStepper::runClockwiseUntilZero(long distance)
     //_speed = 10;
 	computeNewSpeed();
     //runToPosition();
-    // while(1 == 1)
+    // while(_runningClockwise)
     // {
     //         //Serial.println("here 2");
     //     // if (_direction == DIRECTION_CW)
@@ -674,7 +674,7 @@ void AccelStepper::runClockwiseUntilZero(long distance)
     //     //     _currentPos -= 1;
     //     // }
         
-    //     //run();
+    //     run();
     // }
 
 }
@@ -726,11 +726,71 @@ void AccelStepper::setHallStopValue()
 
 void AccelStepper::setNewZeroWithOffset(long offset)
 {
-    stop();
-    delay(5000);
-    _targetPos = _currentPos + offset;
-    Serial.print("target pos: ");
-    Serial.println(_targetPos);
-    moveTo(_targetPos);
-    _currentPos = 0;
+    //stop();
+    setClockwiseBool(false);
+    //moveTo(_currentPos);
+    //delay(5000);
+    // _direction = DIRECTION_CCW;
+    // move(offset);
+    // setClockwiseBool(true);
+    //_targetPos = _currentPos - offset;
+    // Serial.print("target pos: ");
+    // Serial.println(_targetPos);
+    // _currentPos = 0;
+    // while(isRunning())
+    // {
+    //     // do nothing
+    // }
+    Serial.println("stopped");
+    setZeroedBool(true);
+    //setClockwiseBool(false);
+}
+
+void AccelStepper::setClockwiseBool(bool value)
+{
+    _runningClockwise = value;
+}
+
+bool AccelStepper::getClockwiseBool()
+{
+    return _runningClockwise;
+}
+
+void AccelStepper::moveToZero(long offset)
+{
+    _direction = DIRECTION_CCW;
+    if(isTopHand()) offset = offset+200;
+    if(!isTopHand()) offset = offset-200;
+    move(offset);
+    setClockwiseBool(true);
+}
+
+void AccelStepper::setZeroedBool(bool value)
+{
+    _handZeroed = value;
+}
+
+bool AccelStepper::getZeroedBool()
+{
+    return _handZeroed;
+}
+
+void AccelStepper::setZeroOffset(long value)
+{
+    _zeroOffset = value;
+}
+
+long AccelStepper::getZeroOffset()
+{
+    return _zeroOffset;
+}
+
+void AccelStepper::setTopHandBool(bool value)
+{
+    _isTopHand = value;
+}
+
+bool AccelStepper::isTopHand()
+{
+    return _isTopHand;
 }

@@ -77,6 +77,19 @@ void board_loop()
     _motors[i].run();
 }
 
+void board_loop_setup()
+{
+  for(int i = 0; i < 6; i++)
+  {
+    if(_motors[i].getClockwiseBool()) _motors[i].run();
+    if(_motors[0].getZeroedBool() && _motors[1].getZeroedBool() && _motors[2].getZeroedBool() && _motors[3].getZeroedBool() && _motors[4].getZeroedBool() && _motors[5].getZeroedBool())
+    {
+      Serial.println("all motors zeroed");
+      _motors[i].moveToZero(_motors[i].getZeroOffset());
+    } 
+  }
+}
+
 void motor_identification()
 {
   while(1 == 1){
@@ -152,9 +165,11 @@ bool get_direction(int index)
 
 void run_clockwise(int index)
 {
+  _motors[index].setClockwiseBool(true);
     if(index == 0 || index == 2 || index == 4) { // bottom hand
     _motors[index].runClockwiseUntilZero(5000);
   } else if(index == 1 || index == 3 || index == 5) { 
+    _motors[index].setTopHandBool(true);
     _motors[index].runClockwiseUntilZero(5000);
   }
   // _motors[index].setMaxSpeed(100);
@@ -222,5 +237,6 @@ long get_hall_stop_value(int index)
 
 void finish_zero(int index)
 {
+  _motors[index].setZeroOffset(get_hall_step_gap(index) / 2);
   _motors[index].setNewZeroWithOffset(get_hall_step_gap(index) / 2);
 }

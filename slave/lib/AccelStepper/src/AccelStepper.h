@@ -547,6 +547,15 @@ public:
     void setHallStartValue();
     void setHallStopValue();
     void setNewZeroWithOffset(long offset);
+    void setClockwiseBool(bool value);
+    bool getClockwiseBool();
+    void moveToZero(long offset);
+    void setZeroedBool(bool value);
+    bool getZeroedBool();
+    void setZeroOffset(long value);
+    long getZeroOffset();
+    void setTopHandBool(bool value);
+    bool isTopHand();
 
 protected:
 
@@ -707,6 +716,10 @@ private:
 
     long _hallStartStepCount;
     long _hallStopStepCount;
+    bool _runningClockwise;
+    bool _handZeroed;
+    long _zeroOffset;
+    bool _isTopHand;
 };
 
 /// @example Random.pde

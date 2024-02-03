@@ -74,5 +74,6 @@ long get_hall_step_gap(int index);
 long get_hall_start_value(int index);
 long get_hall_stop_value(int index);
 void finish_zero(int index);
+void board_loop_setup();
 
 #endif
