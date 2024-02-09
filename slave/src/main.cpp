@@ -37,7 +37,12 @@ void receiveEvent(int how_many)
 void setup()
 {  
   Serial.begin(115200);
+  
   Serial.println("clockclock24 replica by Vallasc slave v1.0");
+  delay(3000); //wait for the shit serial monitor
+  Serial.println("waiting");
+delay(3000); //wait for the shit serial monitor
+  Serial.println("starting");
 
   board_begin();
   target_clocks_state = {{default_clock, default_clock, default_clock}, {0, 0, 0}};
@@ -51,49 +56,72 @@ void setup()
   Wire.begin(get_i2c_address());
   Wire.onReceive(receiveEvent);
 
+
   for (uint8_t i = 0; i < 6; i++)
   {
+    setCurrentPos(i,360*12*2);
+    Serial.println("going cw");
     run_clockwise(i);
   }
     //motor_identification();
 
 }
 
-
+bool gone_ccw;
 
 void loop()
 {
+  if(!gone_ccw){
+    bool all_started = true;
+    for (uint8_t i = 0; i < 6; i++)
+    {
+      if(!is_hall_start_set(i)) all_started = false;
+    }
+    if(all_started) //all start posns found on CW rotation, switch to CCW
+    {
+      //stop();
+      for (uint8_t i = 0; i < 6; i++)
+      {
+        Serial.println("going ccw");
+        run_counterclockwise(i);
+        gone_ccw  =true;
+      }
+    }
+  }
+
   uint8_t hn= 0;
   for(uint8_t pin : HallPins){
     bool t = !digitalRead(pin);
-    if(t){ //rising edge
-      if(HallStates[hn] != t){      
-        if(!is_hall_start_set(hn)) set_hall_start(hn);
+
+    if(!isZeroed(hn)){
+      if(t){ //rising edge
+        if(HallStates[hn] != t){
           if(get_direction(hn)) //clockwise
           {
-            zero_hand_with_offset(hn, 0);
-          } else {
-            zero_hand_with_offset(hn, 0);
+            Serial.println("Clockwise rising edge");
+            if(!is_hall_start_set(hn)) set_hall_start(hn);
+            zero_hand_with_offset(hn, 0); //i think this does nothing?
+          }
+          else
+          {
+            Serial.println("CounterClockwise rising edge");
+            if(is_hall_start_set(hn) && !is_hall_stop_set(hn)) set_hall_stop(hn);
+            Serial.print("Hall gap for motor ");
+            Serial.print(hn);
+            Serial.print(": ");
+            Serial.print(get_hall_step_gap(hn));
+            Serial.print(" start: ");
+            Serial.print(get_hall_start_value(hn));
+            Serial.print(" stop: ");
+            Serial.println(get_hall_stop_value(hn));
+            finish_zero(hn);
           }
           //blinken(hn+1);
-          
         }
-      HallStates[hn] = t;
-    } else {
-      if(HallStates[hn] != t){ 
-        if(is_hall_start_set(hn) && !is_hall_stop_set(hn)) set_hall_stop(hn);
-        Serial.print("Hall gap for motor ");
-        Serial.print(hn);
-        Serial.print(": ");
-        Serial.print(get_hall_step_gap(hn));
-        Serial.print(" start: ");
-         Serial.print(get_hall_start_value(hn));
-         Serial.print(" stop: ");
-         Serial.println(get_hall_stop_value(hn));
-        finish_zero(hn);
-        HallStates[hn] = t;
       }
     }
+
+    HallStates[hn] = t;
     hn = hn+1;
   }
   delay(10);

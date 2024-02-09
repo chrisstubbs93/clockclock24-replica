@@ -489,6 +489,7 @@ public:
     void    runToNewPosition(long position);
 
     void runClockwiseUntilZero(long distance);
+    void runCounterClockwiseUntilZero(long distance);
 
     /// Sets a new target position that causes the stepper
     /// to stop as quickly as possible, using the current speed and acceleration parameters.

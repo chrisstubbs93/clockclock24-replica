@@ -656,27 +656,17 @@ void AccelStepper::runClockwiseUntilZero(long distance)
     setMaxSpeed(130);
     setAcceleration(20);
     _targetPos = distance;
-    
-    //_speed = 10;
 	computeNewSpeed();
-    //runToPosition();
-    // while(_runningClockwise)
-    // {
-    //         //Serial.println("here 2");
-    //     // if (_direction == DIRECTION_CW)
-    //     // {
-    //     //     // Clockwise
-    //     //     _currentPos += 1;
-    //     // }
-    //     // else
-    //     // {
-    //     //     // Anticlockwise  
-    //     //     _currentPos -= 1;
-    //     // }
-        
-    //     run();
-    // }
+}
 
+void AccelStepper::runCounterClockwiseUntilZero(long distance)
+{
+    _direction = DIRECTION_CCW;
+
+    setMaxSpeed(130);
+    setAcceleration(20);
+    _targetPos = distance;
+	computeNewSpeed();
 }
 
 // Blocks until the new target position is reached
@@ -779,7 +769,9 @@ bool AccelStepper::getZeroedBool()
 
 void AccelStepper::setZeroOffset(long value)
 {
-    _zeroOffset = value;
+    //_zeroOffset = value;
+    _currentPos = _currentPos-value;
+
 }
 
 long AccelStepper::getZeroOffset()

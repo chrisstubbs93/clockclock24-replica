@@ -71,6 +71,10 @@ void board_begin()
                (!digitalRead(ADDR_4) << 3);
 }
 
+bool isZeroed(int index){
+  return _motors[index].getZeroedBool();
+}
+
 void board_loop()
 {
   for(int i = 0; i < 6; i++)
@@ -81,7 +85,8 @@ void board_loop_setup()
 {
   for(int i = 0; i < 6; i++)
   {
-    if(_motors[i].getClockwiseBool()) _motors[i].run();
+    _motors[i].run();
+    //if(_motors[i].getClockwiseBool()) _motors[i].run();
     // if(_motors[0].getZeroedBool() && _motors[1].getZeroedBool() && _motors[2].getZeroedBool() && _motors[3].getZeroedBool() && _motors[4].getZeroedBool() && _motors[5].getZeroedBool())
     // {
     //   if (!all_zeroed){
@@ -112,14 +117,25 @@ void board_loop_setup()
           Serial.print(" going to  ");
           Serial.println(_motors[i].getZeroOffset());
           //_motors[i].moveToZero(_motors[i].getZeroOffset());
-          _motors[i].moveTo(_motors[i].getZeroOffset());
+          _motors[i].moveTo(0);
+          //_motors[i].moveTo(_motors[i].getZeroOffset());
           all_zeroed = true;
         }
-      }
-      for(int i = 0; i < 6; i++)
-      {
-        _motors[i].run();
-      }
+      } 
+      // debugging current posn
+      // else
+      // {
+      //   for(int i = 0; i < 6; i++){
+      //     Serial.print("Zero done, posn ");
+      //     Serial.print(i);
+      //     Serial.print(" is  ");
+      //     Serial.println(_motors[i].currentPosition());
+      //   }
+      // }
+      // for(int i = 0; i < 6; i++)
+      // {
+      //   _motors[i].run();
+      // }
     }
 
 }
@@ -190,10 +206,18 @@ void zero_hand_with_offset(int index, int offset)
   Serial.print("Hand ");
   Serial.print(index);
   Serial.println(" zeroed");
+  //I think this does nothing? Delete?
 }
 
 bool get_direction(int index)
 {
+  Serial.print("Diections ");
+  for (uint8_t i = 0; i < 6; i++)
+  {
+    Serial.print(_motors[i].getCurrentDirection());
+    Serial.print(" ");
+  }
+  Serial.println("");
   return _motors[index].getCurrentDirection();
 }
 
@@ -201,16 +225,45 @@ void run_clockwise(int index)
 {
   _motors[index].setClockwiseBool(true);
     if(index == 0 || index == 2 || index == 4) { // bottom hand
-    _motors[index].runClockwiseUntilZero(5000);
+    _motors[index].runClockwiseUntilZero(360*12*3.5);
   } else if(index == 1 || index == 3 || index == 5) { 
     _motors[index].setTopHandBool(true);
-    _motors[index].runClockwiseUntilZero(5000);
+    _motors[index].runClockwiseUntilZero(360*12*3.5);
   }
   // _motors[index].setMaxSpeed(100);
   // _motors[index].setAcceleration(15);
   // _motors[index].move(2000);
   // _motors[index].runToPosition();
   //_motors[index].runToPosition();
+
+
+
+  //new plan
+  //run 1.5 turns cw, ignoring hands.
+  //run 1.5 turns cw, looking for edge
+  //run back to 0 position, looking for other edge
+}
+
+void run_counterclockwise(int index)
+{
+  _motors[index].setClockwiseBool(true);
+    if(index == 0 || index == 2 || index == 4) { // bottom hand
+    _motors[index].runCounterClockwiseUntilZero(0); //neg?
+  } else if(index == 1 || index == 3 || index == 5) { 
+    _motors[index].setTopHandBool(true);
+    _motors[index].runCounterClockwiseUntilZero(0); //neg?
+  }
+  // _motors[index].setMaxSpeed(100);
+  // _motors[index].setAcceleration(15);
+  // _motors[index].move(2000);
+  // _motors[index].runToPosition();
+  //_motors[index].runToPosition();
+}
+
+
+void setCurrentPos(int i, long p)
+{
+  _motors[i].setCurrentPosition(p);
 }
 
 
@@ -271,7 +324,20 @@ long get_hall_stop_value(int index)
 
 void finish_zero(int index)
 {
+  if(index % 2 == 0){
+    _motors[index].setZeroOffset(BACKLASH+(_motors[index].getHallStartValue() + _motors[index].getHallStopValue()) / 2);
+  } else {
+  _motors[index].setZeroOffset(-BACKLASH+(-180*12)+(_motors[index].getHallStartValue() + _motors[index].getHallStopValue()) / 2);
+  }
 
-  _motors[index].setZeroOffset((_motors[index].getHallStartValue() + _motors[index].getHallStopValue()) / 2);
+  Serial.print("Motor ");
+  Serial.print(index);
+  Serial.print(" startv ");
+  Serial.print(_motors[index].getHallStartValue());
+  Serial.print(" stopv ");
+  Serial.print(_motors[index].getHallStopValue());
+  Serial.print(" zo ");
+  Serial.print(_motors[index].getZeroOffset());
+
   _motors[index].setNewZeroWithOffset(get_hall_step_gap(index) / 2); //ignores numbers
 }

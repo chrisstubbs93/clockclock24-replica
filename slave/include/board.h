@@ -12,6 +12,8 @@
 */
 void blinken(uint8_t n);
 
+void setCurrentPos(int i, long p);
+
 /**
  * Zero hand posn when crossing sensor
 */
@@ -19,6 +21,7 @@ void zero_hand_with_offset(int index, int offset);
 
 bool get_direction(int index);
 void run_clockwise(int index);
+void run_counterclockwise(int index);
 void set_clock_test(int index, t_clock state);
 /**
  * Initializes all motor objects and get the I2C address
@@ -75,5 +78,7 @@ long get_hall_start_value(int index);
 long get_hall_stop_value(int index);
 void finish_zero(int index);
 void board_loop_setup();
+
+bool isZeroed(int index);
 
 #endif
