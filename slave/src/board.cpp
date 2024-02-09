@@ -324,10 +324,12 @@ long get_hall_stop_value(int index)
 
 void finish_zero(int index)
 {
-  if(index % 2 == 0){
+  if(index % 2 == 0){ //hour hand
     _motors[index].setZeroOffset(BACKLASH+(_motors[index].getHallStartValue() + _motors[index].getHallStopValue()) / 2);
-  } else {
+    _motors[index].setHandAngle(180);
+  } else { //min hand
   _motors[index].setZeroOffset(-BACKLASH+(-180*12)+(_motors[index].getHallStartValue() + _motors[index].getHallStopValue()) / 2);
+  _motors[index].setHandAngle(180);
   }
 
   Serial.print("Motor ");

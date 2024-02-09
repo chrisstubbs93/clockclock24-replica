@@ -5,7 +5,7 @@
 #include "board_config.h"
 #include "clock_state.h"
 
-#define INIT_HANDS_ANGLE 270
+#define INIT_HANDS_ANGLE 360
 
 /**
  * Blink the LED n times

@@ -29,7 +29,7 @@
 
 #define RESET 22
 
-#define BACKLASH 45 // BACKLASH STEPS IN MOTOR
+#define BACKLASH 30 // BACKLASH STEPS IN MOTOR
 
 const uint8_t HallPins[] = {16,17,14,15,12,13}; //A-F
 

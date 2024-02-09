@@ -135,26 +135,34 @@ void setup1()
 // Steppers on core 1
 void loop1()
 {
-  board_loop_setup();
-  //board_loop();
-  for (uint8_t i = 0; i < 3; i++)
-  {
-    if(!clock_is_running(i) && current_clocks_state.change_counter[i] != target_clocks_state.change_counter[i])
+  if (isZeroed(0)&&isZeroed(1)&&isZeroed(2)&&isZeroed(3)&&isZeroed(4)&&isZeroed(5))
+  { //all zeroed run normal clock code
+    board_loop();
+
+    for (uint8_t i = 0; i < 3; i++)
     {
-      //Serial.printf("Inside clock %d\n", i);
-      spin_lock_unsafe_blocking(spin_lock[i]);
-      current_clocks_state.clocks[i] = target_clocks_state.clocks[i];
-      current_clocks_state.change_counter[i] = target_clocks_state.change_counter[i];
-      spin_unlock_unsafe(spin_lock[i]);
+      if(!clock_is_running(i) && current_clocks_state.change_counter[i] != target_clocks_state.change_counter[i])
+      {
+        //Serial.printf("Inside clock %d\n", i);
+        spin_lock_unsafe_blocking(spin_lock[i]);
+        current_clocks_state.clocks[i] = target_clocks_state.clocks[i];
+        current_clocks_state.change_counter[i] = target_clocks_state.change_counter[i];
+        spin_unlock_unsafe(spin_lock[i]);
 
-      // if(current_clocks_state.clocks[i].mode_h == ADJUST_HAND)
-      //   adjust_h_hand(i, current_clocks_state.clocks[i].adjust_h);
+        if(current_clocks_state.clocks[i].mode_h == ADJUST_HAND)
+          adjust_h_hand(i, current_clocks_state.clocks[i].adjust_h);
 
-      // if(current_clocks_state.clocks[i].mode_m == ADJUST_HAND)
-      //   adjust_m_hand(i, current_clocks_state.clocks[i].adjust_m);
+        if(current_clocks_state.clocks[i].mode_m == ADJUST_HAND)
+          adjust_m_hand(i, current_clocks_state.clocks[i].adjust_m);
 
-      // if(current_clocks_state.clocks[i].mode_h <= MAX_DISTANCE3)
-      //   set_clock(i, current_clocks_state.clocks[i]);
+        if(current_clocks_state.clocks[i].mode_h <= MAX_DISTANCE3)
+          set_clock(i, current_clocks_state.clocks[i]);
+      }
     }
   }
+  else
+  { // not all zeroed, run zero code
+    board_loop_setup();
+  }
+
 }
