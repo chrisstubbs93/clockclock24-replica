@@ -6,6 +6,7 @@
 #include "i2c.h"
 
 bool HallStates[8];
+bool readyToZero;
 
 const t_clock default_clock = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -56,10 +57,26 @@ delay(3000); //wait for the shit serial monitor
   Wire.begin(get_i2c_address());
   Wire.onReceive(receiveEvent);
 
+  //before doing anything, move any hands which are currently over hall sensors.
+  for (uint8_t i = 0; i < 6; i++)
+  {
+    if(!digitalRead(HallPins[i])) //currently over hall
+    {
+      Serial.print("Motor ");
+      Serial.print(i);
+      Serial.println(" started on sensor. moving.");
+      jogHandOffSensor(i);  //jog it
+      delay(10000); //wait for move otherwise death
+      set_hand_angle(i,0); // pretend that never happened
+      setCurrentPos(i,0); // pretend that never happened
+    }
+  }
+  readyToZero = true;
+
 
   for (uint8_t i = 0; i < 6; i++)
   {
-    setCurrentPos(i,360*12*2);
+    setCurrentPos(i,360*12*2);//trick it so it can turn backwards to 0
     Serial.println("going cw");
     run_clockwise(i);
   }
@@ -93,7 +110,7 @@ void loop()
   for(uint8_t pin : HallPins){
     bool t = !digitalRead(pin);
 
-    if(!isZeroed(hn)){
+    if(!isZeroed(hn) && readyToZero){
       if(t){ //rising edge
         if(HallStates[hn] != t){
           if(get_direction(hn)) //clockwise
@@ -120,11 +137,10 @@ void loop()
         }
       }
     }
-
     HallStates[hn] = t;
     hn = hn+1;
   }
-  delay(10);
+  //delay(1);
 }
 
 void setup1() 

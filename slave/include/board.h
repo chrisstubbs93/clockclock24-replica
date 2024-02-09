@@ -5,7 +5,7 @@
 #include "board_config.h"
 #include "clock_state.h"
 
-#define INIT_HANDS_ANGLE 360
+#define INIT_HANDS_ANGLE 0
 
 /**
  * Blink the LED n times
@@ -13,6 +13,10 @@
 void blinken(uint8_t n);
 
 void setCurrentPos(int i, long p);
+
+void jogHandOffSensor(int index);
+
+void set_hand_angle(int index, int angle);
 
 /**
  * Zero hand posn when crossing sensor

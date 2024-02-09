@@ -653,8 +653,8 @@ void AccelStepper::runClockwiseUntilZero(long distance)
 {
     _direction = DIRECTION_CW;
 
-    setMaxSpeed(250);
-    setAcceleration(100);
+    setMaxSpeed(300);
+    setAcceleration(300);
     _targetPos = distance;
 	computeNewSpeed();
 }
@@ -663,8 +663,8 @@ void AccelStepper::runCounterClockwiseUntilZero(long distance)
 {
     _direction = DIRECTION_CCW;
 
-    setMaxSpeed(250);
-    setAcceleration(100);
+    setMaxSpeed(300);
+    setAcceleration(300);
     _targetPos = distance;
 	computeNewSpeed();
 }

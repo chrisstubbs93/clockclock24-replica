@@ -211,14 +211,20 @@ void zero_hand_with_offset(int index, int offset)
 
 bool get_direction(int index)
 {
-  Serial.print("Diections ");
-  for (uint8_t i = 0; i < 6; i++)
-  {
-    Serial.print(_motors[i].getCurrentDirection());
-    Serial.print(" ");
-  }
-  Serial.println("");
+  // Serial.print("Directions ");
+  // for (uint8_t i = 0; i < 6; i++)
+  // {
+  //   Serial.print(_motors[i].getCurrentDirection());
+  //   Serial.print(" ");
+  // }
+  //Serial.println("");
   return _motors[index].getCurrentDirection();
+}
+
+void jogHandOffSensor(int index)
+{
+  //_motors[index].setClockwiseBool(true);
+    _motors[index].runClockwiseUntilZero(90*12); //not until zero, stupid fucntion name
 }
 
 void run_clockwise(int index)
@@ -230,34 +236,17 @@ void run_clockwise(int index)
     _motors[index].setTopHandBool(true);
     _motors[index].runClockwiseUntilZero(360*12*3.5);
   }
-  // _motors[index].setMaxSpeed(100);
-  // _motors[index].setAcceleration(15);
-  // _motors[index].move(2000);
-  // _motors[index].runToPosition();
-  //_motors[index].runToPosition();
-
-
-
-  //new plan
-  //run 1.5 turns cw, ignoring hands.
-  //run 1.5 turns cw, looking for edge
-  //run back to 0 position, looking for other edge
 }
 
 void run_counterclockwise(int index)
 {
   _motors[index].setClockwiseBool(true);
     if(index == 0 || index == 2 || index == 4) { // bottom hand
-    _motors[index].runCounterClockwiseUntilZero(0); //neg?
+    _motors[index].runCounterClockwiseUntilZero(0);
   } else if(index == 1 || index == 3 || index == 5) { 
     _motors[index].setTopHandBool(true);
-    _motors[index].runCounterClockwiseUntilZero(0); //neg?
+    _motors[index].runCounterClockwiseUntilZero(0);
   }
-  // _motors[index].setMaxSpeed(100);
-  // _motors[index].setAcceleration(15);
-  // _motors[index].move(2000);
-  // _motors[index].runToPosition();
-  //_motors[index].runToPosition();
 }
 
 
@@ -321,6 +310,12 @@ long get_hall_stop_value(int index)
 {
   return _motors[index].getHallStopValue();
 }
+
+void set_hand_angle(int index, int angle)
+{
+  _motors[index].setHandAngle(angle);
+}
+
 
 void finish_zero(int index)
 {
