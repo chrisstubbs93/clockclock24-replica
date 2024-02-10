@@ -26,7 +26,6 @@ void zero_hand_with_offset(int index, int offset);
 bool get_direction(int index);
 void run_clockwise(int index);
 void run_counterclockwise(int index);
-void set_clock_test(int index, t_clock state);
 /**
  * Initializes all motor objects and get the I2C address
 */

@@ -66,11 +66,9 @@ delay(3000); //wait for the shit serial monitor
       Serial.print(i);
       Serial.println(" started on sensor. moving.");
       jogHandOffSensor(i);  //jog it
-      delay(10000); //wait for move otherwise death
-      set_hand_angle(i,0); // pretend that never happened
-      setCurrentPos(i,0); // pretend that never happened
     }
   }
+  delay(6000); //wait for move otherwise death
   readyToZero = true;
 
 

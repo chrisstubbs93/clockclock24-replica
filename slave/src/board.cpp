@@ -86,23 +86,6 @@ void board_loop_setup()
   for(int i = 0; i < 6; i++)
   {
     _motors[i].run();
-    //if(_motors[i].getClockwiseBool()) _motors[i].run();
-    // if(_motors[0].getZeroedBool() && _motors[1].getZeroedBool() && _motors[2].getZeroedBool() && _motors[3].getZeroedBool() && _motors[4].getZeroedBool() && _motors[5].getZeroedBool())
-    // {
-    //   if (!all_zeroed){
-    //     Serial.print("hand");
-    //     Serial.print(i);
-    //     Serial.print(" posn is  ");
-    //     Serial.print(_motors[i].currentPosition());
-    //     Serial.print(" going to  ");
-    //     Serial.println(_motors[0].getZeroOffset());
-    //     //_motors[i].moveToZero(_motors[i].getZeroOffset());
-
-    //     _motors[i].moveTo(_motors[i].getZeroOffset());
-    //     all_zeroed = true;
-    //   }
-    //   _motors[i].run();
-    // } 
   }
 
   if(_motors[0].getZeroedBool() && _motors[1].getZeroedBool() && _motors[2].getZeroedBool() && _motors[3].getZeroedBool() && _motors[4].getZeroedBool() && _motors[5].getZeroedBool())
@@ -116,26 +99,10 @@ void board_loop_setup()
           Serial.print(_motors[i].currentPosition());
           Serial.print(" going to  ");
           Serial.println(_motors[i].getZeroOffset());
-          //_motors[i].moveToZero(_motors[i].getZeroOffset());
           _motors[i].moveTo(0);
-          //_motors[i].moveTo(_motors[i].getZeroOffset());
           all_zeroed = true;
         }
       } 
-      // debugging current posn
-      // else
-      // {
-      //   for(int i = 0; i < 6; i++){
-      //     Serial.print("Zero done, posn ");
-      //     Serial.print(i);
-      //     Serial.print(" is  ");
-      //     Serial.println(_motors[i].currentPosition());
-      //   }
-      // }
-      // for(int i = 0; i < 6; i++)
-      // {
-      //   _motors[i].run();
-      // }
     }
 
 }
@@ -202,7 +169,6 @@ void zero_hand_with_offset(int index, int offset)
   if(index == 0 || index == 2 || index == 4) { // bottom hand
     offset = offset * 2;
   }
-  //_motors[index].zeroCurrentPositionWithOffset(offset);
   Serial.print("Hand ");
   Serial.print(index);
   Serial.println(" zeroed");
@@ -211,19 +177,11 @@ void zero_hand_with_offset(int index, int offset)
 
 bool get_direction(int index)
 {
-  // Serial.print("Directions ");
-  // for (uint8_t i = 0; i < 6; i++)
-  // {
-  //   Serial.print(_motors[i].getCurrentDirection());
-  //   Serial.print(" ");
-  // }
-  //Serial.println("");
   return _motors[index].getCurrentDirection();
 }
 
 void jogHandOffSensor(int index)
 {
-  //_motors[index].setClockwiseBool(true);
     _motors[index].runClockwiseUntilZero(90*12); //not until zero, stupid fucntion name
 }
 
@@ -253,20 +211,6 @@ void run_counterclockwise(int index)
 void setCurrentPos(int i, long p)
 {
   _motors[i].setCurrentPosition(p);
-}
-
-
-void set_clock_test(int index, t_clock state)
-{
-  int angle_h = sanitize_angle(state.angle_h + state.adjust_h);
-  _motors[index].setMaxSpeed(state.speed_h);
-  _motors[index].setAcceleration(state.accel_h);
-  //_motors[index*2].moveToAngle(angle_h, state.mode_h);
-
-  int angle_m = sanitize_angle(state.angle_m + state.adjust_m);
-  _motors[index].setMaxSpeed(state.speed_m);
-  _motors[index].setAcceleration(state.accel_m);
-  //_motors[index*2 + 1].moveToAngle(angle_m, state.mode_m);
 }
 
 bool is_hall_start_set(int index)
@@ -319,22 +263,13 @@ void set_hand_angle(int index, int angle)
 
 void finish_zero(int index)
 {
-  if(index % 2 == 0){ //hour hand
-    _motors[index].setZeroOffset(BACKLASH+(_motors[index].getHallStartValue() + _motors[index].getHallStopValue()) / 2);
+  if(_motors[index].getHallStartValue() < ((360+360+180)*12))//if it starts in the north hemisphere (or south)?
+  {
+    _motors[index].setZeroOffset((_motors[index].getHallStartValue() + _motors[index].getHallStopValue()) / 2);
     _motors[index].setHandAngle(180);
-  } else { //min hand
-  _motors[index].setZeroOffset(-BACKLASH+(-180*12)+(_motors[index].getHallStartValue() + _motors[index].getHallStopValue()) / 2);
-  _motors[index].setHandAngle(180);
+  } else { //if it starts in the other hemisphere
+    _motors[index].setZeroOffset((-180*12)+(_motors[index].getHallStartValue() + _motors[index].getHallStopValue()) / 2);
+    _motors[index].setHandAngle(180);
   }
-
-  Serial.print("Motor ");
-  Serial.print(index);
-  Serial.print(" startv ");
-  Serial.print(_motors[index].getHallStartValue());
-  Serial.print(" stopv ");
-  Serial.print(_motors[index].getHallStopValue());
-  Serial.print(" zo ");
-  Serial.print(_motors[index].getZeroOffset());
-
   _motors[index].setNewZeroWithOffset(get_hall_step_gap(index) / 2); //ignores numbers
 }
