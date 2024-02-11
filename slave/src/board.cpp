@@ -262,12 +262,19 @@ void set_hand_angle(int index, int angle)
 
 
 void finish_zero(int index)
-{
-  if(_motors[index].getHallStartValue() < ((360+360+180)*12))//if it starts in the north hemisphere (or south)?
+{ 
+  //stuff that didn't work:
+  //_motors[index].getHallStartValue() < ((360+360)*12)+(get_hall_step_gap(index)/2)
+  //_motors[index].getHallStartValue()-(0.5*_motors[index].getHallStopValue()) > (360+360)*12
+  //Serial.printf("Top, Start: %ld, stop, %ld, c, %ld \n", _motors[index].getHallStartValue(),_motors[index].getHallStopValue(), (360+360)*12);
+
+  if((((360+360)*12)-_motors[index].getHallStopValue())/12 < 0)//if it starts in the north hemisphere (or south)?
   {
+    Serial.printf("Top, Start: %ld, stop, %ld, a, %ld \n", _motors[index].getHallStartValue(),_motors[index].getHallStopValue(), (((360+360)*12)-_motors[index].getHallStopValue())/12);
     _motors[index].setZeroOffset((_motors[index].getHallStartValue() + _motors[index].getHallStopValue()) / 2);
     _motors[index].setHandAngle(180);
   } else { //if it starts in the other hemisphere
+    Serial.printf("Bot, Start: %ld, stop, %ld, a, %ld \n", _motors[index].getHallStartValue(),_motors[index].getHallStopValue(), (((360+360)*12)-_motors[index].getHallStopValue())/12);
     _motors[index].setZeroOffset((-180*12)+(_motors[index].getHallStartValue() + _motors[index].getHallStopValue()) / 2);
     _motors[index].setHandAngle(180);
   }
