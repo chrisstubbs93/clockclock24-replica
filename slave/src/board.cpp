@@ -1,4 +1,5 @@
 #include "board.h"
+#include <string>
 
 // Define a stepper and the pins it will use
 ClockAccelStepper _motors[6] = {
@@ -70,10 +71,56 @@ void board_begin()
                (!digitalRead(ADDR_4) << 3);
 }
 
+bool isZeroed(int index){
+  return _motors[index].getZeroedBool();
+}
+
 void board_loop()
 {
   for(int i = 0; i < 6; i++)
     _motors[i].run();
+}
+bool all_zeroed;
+void board_loop_setup()
+{
+  for(int i = 0; i < 6; i++)
+  {
+    _motors[i].run();
+  }
+
+  if(_motors[0].getZeroedBool() && _motors[1].getZeroedBool() && _motors[2].getZeroedBool() && _motors[3].getZeroedBool() && _motors[4].getZeroedBool() && _motors[5].getZeroedBool())
+    {
+      if (!all_zeroed){
+      for(int i = 0; i < 6; i++)
+        {
+          Serial.print("hand");
+          Serial.print(i);
+          Serial.print(" posn is  ");
+          Serial.print(_motors[i].currentPosition());
+          Serial.print(" going to  ");
+          Serial.println(_motors[i].getZeroOffset());
+          _motors[i].moveTo(0);
+          all_zeroed = true;
+        }
+      } 
+    }
+
+}
+
+void motor_identification()
+{
+  while(1 == 1){
+  for(int i = 0; i < 6; i++)
+  {
+    Serial.println("Moving Motor");
+    Serial.println(i);
+    //_motors[i].run();
+    _motors[i].move(100);
+    _motors[i].runToPosition();
+    delay(5000);
+  }
+  }
+
 }
 
 uint8_t get_i2c_address()
@@ -117,7 +164,119 @@ void adjust_m_hand(int index, signed char amount)
   _motors[index*2].runToPosition();
 }
 
-void zero_hand(int index)
+void zero_hand_with_offset(int index, int offset)
 {
-_motors[index].setHandAngle(1);
+  if(index == 0 || index == 2 || index == 4) { // bottom hand
+    offset = offset * 2;
+  }
+  Serial.print("Hand ");
+  Serial.print(index);
+  Serial.println(" zeroed");
+  //I think this does nothing? Delete?
+}
+
+bool get_direction(int index)
+{
+  return _motors[index].getCurrentDirection();
+}
+
+void jogHandOffSensor(int index)
+{
+    _motors[index].runClockwiseUntilZero(90*12); //not until zero, stupid fucntion name
+}
+
+void run_clockwise(int index)
+{
+  _motors[index].setClockwiseBool(true);
+    if(index == 0 || index == 2 || index == 4) { // bottom hand
+    _motors[index].runClockwiseUntilZero(360*12*3.5);
+  } else if(index == 1 || index == 3 || index == 5) { 
+    _motors[index].setTopHandBool(true);
+    _motors[index].runClockwiseUntilZero(360*12*3.5);
+  }
+}
+
+void run_counterclockwise(int index)
+{
+  _motors[index].setClockwiseBool(true);
+    if(index == 0 || index == 2 || index == 4) { // bottom hand
+    _motors[index].runCounterClockwiseUntilZero(0);
+  } else if(index == 1 || index == 3 || index == 5) { 
+    _motors[index].setTopHandBool(true);
+    _motors[index].runCounterClockwiseUntilZero(0);
+  }
+}
+
+
+void setCurrentPos(int i, long p)
+{
+  _motors[i].setCurrentPosition(p);
+}
+
+bool is_hall_start_set(int index)
+{
+  return _motors[index].getHallStartValue() != -10000 ? true : false;
+}
+
+bool is_hall_stop_set(int index)
+{
+  return _motors[index].getHallStopValue() != -10000 ? true : false;
+}
+
+void set_hall_start(int index)
+{
+  _motors[index].setHallStartValue();
+  Serial.print("Hall Start set");
+}
+
+void set_hall_stop(int index)
+{
+  _motors[index].setHallStopValue();
+  Serial.print("Hall stop set");
+}
+
+long get_hall_step_gap(int index)
+{
+  if(_motors[index].getHallStartValue() > _motors[index].getHallStopValue())
+  {
+    return _motors[index].getHallStartValue() - _motors[index].getHallStopValue();
+  } else {
+    return _motors[index].getHallStopValue() - _motors[index].getHallStartValue();
+  }
+}
+
+long get_hall_start_value(int index)
+{
+  return _motors[index].getHallStartValue();
+}
+
+long get_hall_stop_value(int index)
+{
+  return _motors[index].getHallStopValue();
+}
+
+void set_hand_angle(int index, int angle)
+{
+  _motors[index].setHandAngle(angle);
+}
+
+
+void finish_zero(int index)
+{ 
+  //stuff that didn't work:
+  //_motors[index].getHallStartValue() < ((360+360)*12)+(get_hall_step_gap(index)/2)
+  //_motors[index].getHallStartValue()-(0.5*_motors[index].getHallStopValue()) > (360+360)*12
+  //Serial.printf("Top, Start: %ld, stop, %ld, c, %ld \n", _motors[index].getHallStartValue(),_motors[index].getHallStopValue(), (360+360)*12);
+
+  if((((360+360)*12)-_motors[index].getHallStopValue())/12 < 0)//if it starts in the north hemisphere (or south)?
+  {
+    Serial.printf("Top, Start: %ld, stop, %ld, a, %ld \n", _motors[index].getHallStartValue(),_motors[index].getHallStopValue(), (((360+360)*12)-_motors[index].getHallStopValue())/12);
+    _motors[index].setZeroOffset((_motors[index].getHallStartValue() + _motors[index].getHallStopValue()) / 2);
+    _motors[index].setHandAngle(180);
+  } else { //if it starts in the other hemisphere
+    Serial.printf("Bot, Start: %ld, stop, %ld, a, %ld \n", _motors[index].getHallStartValue(),_motors[index].getHallStopValue(), (((360+360)*12)-_motors[index].getHallStopValue())/12);
+    _motors[index].setZeroOffset((-180*12)+(_motors[index].getHallStartValue() + _motors[index].getHallStopValue()) / 2);
+    _motors[index].setHandAngle(180);
+  }
+  _motors[index].setNewZeroWithOffset(get_hall_step_gap(index) / 2); //ignores numbers
 }

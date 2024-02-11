@@ -466,6 +466,12 @@ public:
     /// happens to be right now.
     void    setCurrentPosition(long position);  
     
+    void    zeroCurrentPositionWithOffset(int offset);
+
+    /// @brief Get current direction of this motor
+    /// @return CW = 1/true
+    bool getCurrentDirection();
+
     /// Moves the motor (with acceleration/deceleration)
     /// to the target position and blocks until it is at
     /// position. Dont use this in event loops, since it blocks.
@@ -481,6 +487,9 @@ public:
     /// position. Dont use this in event loops, since it blocks.
     /// \param[in] position The new target position.
     void    runToNewPosition(long position);
+
+    void runClockwiseUntilZero(long distance);
+    void runCounterClockwiseUntilZero(long distance);
 
     /// Sets a new target position that causes the stepper
     /// to stop as quickly as possible, using the current speed and acceleration parameters.
@@ -532,6 +541,22 @@ public:
     /// Checks to see if the motor is currently running to a target
     /// \return true if the speed is not zero or not at the target position
     bool    isRunning();
+
+    long getHallStartValue();
+
+    long getHallStopValue();
+    void setHallStartValue();
+    void setHallStopValue();
+    void setNewZeroWithOffset(long offset);
+    void setClockwiseBool(bool value);
+    bool getClockwiseBool();
+    void moveToZero(long offset);
+    void setZeroedBool(bool value);
+    bool getZeroedBool();
+    void setZeroOffset(long value);
+    long getZeroOffset();
+    void setTopHandBool(bool value);
+    bool isTopHand();
 
 protected:
 
@@ -690,6 +715,12 @@ private:
     /// Min step size in microseconds based on maxSpeed
     float _cmin; // at max speed
 
+    long _hallStartStepCount;
+    long _hallStopStepCount;
+    bool _runningClockwise;
+    bool _handZeroed;
+    long _zeroOffset;
+    bool _isTopHand;
 };
 
 /// @example Random.pde

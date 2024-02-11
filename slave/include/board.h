@@ -5,18 +5,27 @@
 #include "board_config.h"
 #include "clock_state.h"
 
-#define INIT_HANDS_ANGLE 270
+#define INIT_HANDS_ANGLE 0
 
 /**
  * Blink the LED n times
 */
 void blinken(uint8_t n);
 
+void setCurrentPos(int i, long p);
+
+void jogHandOffSensor(int index);
+
+void set_hand_angle(int index, int angle);
+
 /**
  * Zero hand posn when crossing sensor
 */
-void zero_hand(int index);
+void zero_hand_with_offset(int index, int offset);
 
+bool get_direction(int index);
+void run_clockwise(int index);
+void run_counterclockwise(int index);
 /**
  * Initializes all motor objects and get the I2C address
 */
@@ -26,6 +35,8 @@ void board_begin();
  * Needs to be called on the main loop to move steppers
 */
 void board_loop();
+
+void motor_identification();
 
 /**
  * Gets the current I2C address set on the board
@@ -60,5 +71,17 @@ void adjust_h_hand(int index, signed char amount);
  * @param amount    angle (< 0 clockwise, > 0 counterclockwise)
 */
 void adjust_m_hand(int index, signed char amount);
+
+bool is_hall_start_set(int index);
+bool is_hall_stop_set(int index);
+void set_hall_start(int index);
+void set_hall_stop(int index);
+long get_hall_step_gap(int index);
+long get_hall_start_value(int index);
+long get_hall_stop_value(int index);
+void finish_zero(int index);
+void board_loop_setup();
+
+bool isZeroed(int index);
 
 #endif

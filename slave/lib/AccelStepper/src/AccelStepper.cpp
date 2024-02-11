@@ -5,6 +5,8 @@
 
 #include "AccelStepper.h"
 
+#define zeroOffset 30
+
 #if 0
 // Some debugging assistance
 void dump(uint8_t* p, int l)
@@ -24,8 +26,8 @@ void AccelStepper::moveTo(long absolute)
 {
     if (_targetPos != absolute)
     {
-	_targetPos = absolute;
-	computeNewSpeed();
+        _targetPos = absolute;
+        computeNewSpeed();
 	// compute new n?
     }
 }
@@ -82,6 +84,23 @@ long AccelStepper::targetPosition()
 long AccelStepper::currentPosition()
 {
     return _currentPos;
+}
+
+void AccelStepper::zeroCurrentPositionWithOffset(int offset)
+{
+    _targetPos = 0 + offset;
+    moveTo(_targetPos);
+    _currentPos = 0;
+    // _n = 0;
+    // _stepInterval = 0;
+    // _speed = 0.0;
+}
+
+/// @brief Get current direction of this motor
+/// @return CW = 1/true
+bool AccelStepper::getCurrentDirection()
+{
+    return _direction;
 }
 
 // Useful during initialisations or after initial positioning
@@ -205,6 +224,9 @@ AccelStepper::AccelStepper(uint8_t interface, uint8_t pin1, uint8_t pin2, uint8_
     _pin[2] = pin3;
     _pin[3] = pin4;
     _enableInverted = false;
+
+    _hallStartStepCount = -10000;
+    _hallStopStepCount = -10000;
     
     // NEW
     _n = 0;
@@ -627,6 +649,26 @@ boolean AccelStepper::runSpeedToPosition()
     return runSpeed();
 }
 
+void AccelStepper::runClockwiseUntilZero(long distance)
+{
+    _direction = DIRECTION_CW;
+
+    setMaxSpeed(300);
+    setAcceleration(300);
+    _targetPos = distance;
+	computeNewSpeed();
+}
+
+void AccelStepper::runCounterClockwiseUntilZero(long distance)
+{
+    _direction = DIRECTION_CCW;
+
+    setMaxSpeed(300);
+    setAcceleration(300);
+    _targetPos = distance;
+	computeNewSpeed();
+}
+
 // Blocks until the new target position is reached
 void AccelStepper::runToNewPosition(long position)
 {
@@ -649,4 +691,100 @@ void AccelStepper::stop()
 bool AccelStepper::isRunning()
 {
     return !(_speed == 0.0 && _targetPos == _currentPos);
+}
+
+long AccelStepper::getHallStartValue()
+{
+    return _hallStartStepCount;
+}
+
+long AccelStepper::getHallStopValue()
+{
+    return _hallStopStepCount;
+}
+
+void AccelStepper::setHallStartValue()
+{
+    _hallStartStepCount = _currentPos;
+    //_currentPos = 0; //maybe dont do this
+}
+
+void AccelStepper::setHallStopValue()
+{
+    _hallStopStepCount = _currentPos;
+}
+
+void AccelStepper::setNewZeroWithOffset(long offset)
+{
+    //stop();
+    setClockwiseBool(false);
+    //moveTo(_currentPos);
+    //delay(5000);
+    // _direction = DIRECTION_CCW;
+    // move(offset);
+    // setClockwiseBool(true);
+    //_targetPos = _currentPos - offset;
+    // Serial.print("target pos: ");
+    // Serial.println(_targetPos);
+    // _currentPos = 0;
+    // while(isRunning())
+    // {
+    //     // do nothing
+    // }
+    Serial.println("stopped");
+    setZeroedBool(true);
+    //setClockwiseBool(false);
+}
+
+void AccelStepper::setClockwiseBool(bool value)
+{
+    _runningClockwise = value;
+}
+
+bool AccelStepper::getClockwiseBool()
+{
+    return _runningClockwise;
+}
+
+void AccelStepper::moveToZero(long offset)
+{
+    _direction = DIRECTION_CCW;
+    if(isTopHand()) offset = offset;
+    if(!isTopHand()) offset = offset;
+    _currentPos = 0;
+    //move(offset);
+    //runToPosition();
+    setClockwiseBool(true);
+}
+
+void AccelStepper::setZeroedBool(bool value)
+{
+    _handZeroed = value;
+}
+
+bool AccelStepper::getZeroedBool()
+{
+    return _handZeroed;
+}
+
+void AccelStepper::setZeroOffset(long value)
+{
+    //_zeroOffset = value;
+    _currentPos = _currentPos-value;
+
+}
+
+long AccelStepper::getZeroOffset()
+{
+    return _zeroOffset;
+}
+
+void AccelStepper::setTopHandBool(bool value)
+{
+    _isTopHand = value;
+}
+
+bool AccelStepper::isTopHand()
+{
+    return _isTopHand;
 }
